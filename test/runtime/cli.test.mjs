@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { send } from '../fixtures/http.mjs';
 
 const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -96,7 +97,7 @@ test('启动CLI只监听回环地址，返回健康状态与准确兼容标识',
   });
   assert.equal(address.host, '127.0.0.1');
   assert.equal(address.compatibility, 'arkhost-assignment-v1');
-  const response = await fetch(`http://${address.host}:${address.port}/health`);
+  const response = await send(address.port, '', { method: 'GET', path: '/health' });
   assert.equal(response.status, 200);
-  assert.equal((await response.json()).status, 'ok');
+  assert.equal(response.body.status, 'ok');
 });

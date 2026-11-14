@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { loadCatalog } from '../../src/data/catalog.mjs';
 import { dataPin, syntheticPlayer } from '../fixtures/player.mjs';
 import { arrangePreview } from '../../src/arrange.mjs';
+import { send } from '../fixtures/http.mjs';
 import { createSchedulingService } from '../../src/runtime/service.mjs';
 
 const dataDirectory = fileURLToPath(new URL('../../data/ArknightsGamedataPure/', import.meta.url));
@@ -70,10 +71,7 @@ test('默认HTTP生成可用制造班表，历史伪造无效，失败后可恢�
   const service = await createSchedulingService({ dataDirectory, pin: dataPin });
   t.after(() => service.close());
   const { port } = await service.listen(0);
-  const post = async input => {
-    const response = await fetch(`http://127.0.0.1:${port}/api/v1/arrange`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) });
-    return { status: response.status, body: await response.json() };
-  };
+  const post = input => send(port, JSON.stringify(input));
   const first = await post(fixture());
   assert.equal(first.status, 200);
   assert.deepEqual(first.body.diagnostics.frozenSlots, []);

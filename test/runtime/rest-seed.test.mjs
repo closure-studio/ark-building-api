@@ -5,6 +5,7 @@ import { loadCatalog } from '../../src/data/catalog.mjs';
 import { dataPin } from '../../src/data/pin.mjs';
 import { arrangePreview } from '../../src/arrange.mjs';
 import { createSchedulingService } from '../../src/runtime/service.mjs';
+import { send } from '../fixtures/http.mjs';
 import { baseLayout } from '../fixtures/base-layout.mjs';
 
 const dataDirectory = fileURLToPath(new URL('../../data/ArknightsGamedataPure/', import.meta.url));
@@ -76,12 +77,7 @@ test('默认HTTP覆盖同AP疲劳、历史冻结、失败和恢复，不更改�
   const service = await createSchedulingService({ dataDirectory, pin: dataPin });
   t.after(() => service.close());
   const address = await service.listen();
-  const post = async input => {
-    const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/arrange`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input),
-    });
-    return { status: response.status, body: await response.json() };
-  };
+  const post = input => send(address.port, JSON.stringify(input));
   const input = fixture(), before = structuredClone(input);
   const first = await post(input);
   assert.equal(first.status, 200, JSON.stringify(first.body));

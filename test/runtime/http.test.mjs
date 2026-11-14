@@ -4,19 +4,7 @@ import { request } from 'node:http';
 import { createLocalServer } from '../../src/runtime/http.mjs';
 import { createExecutor } from '../../src/runtime/executor.mjs';
 
-function send(port, body = '{}', { path = '/api/v1/arrange', method = 'POST', headers = {} } = {}) {
-  return new Promise((resolve, reject) => {
-    const req = request({ host: '127.0.0.1', port, path, method,
-      headers: { 'content-type': 'application/json', ...headers } }, res => {
-      let text = '';
-      res.setEncoding('utf8');
-      res.on('data', chunk => { text += chunk; });
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(text) }));
-    });
-    req.on('error', reject);
-    req.end(body);
-  });
-}
+import { send } from '../fixtures/http.mjs';
 async function setup(t, options = {}) {
   const executor = createExecutor(new URL('../fixtures/runtime-worker.mjs', import.meta.url), {
     timeoutMs: 500, maxQueue: 0,

@@ -9,30 +9,14 @@ import { mkdtemp, mkdir, copyFile, readFile, writeFile, rm } from 'node:fs/promi
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { request } from 'node:http';
+import { send } from '../fixtures/http.mjs';
 
 const dataDirectory = fileURLToPath(new URL('../../data/ArknightsGamedataPure/', import.meta.url));
 async function setup(t, options = {}) {
   const service = await createSchedulingService({ dataDirectory, pin: dataPin, ...options });
   t.after(() => service.close());
   const address = await service.listen();
-  // 系统分配的临时端口可能落入fetch的浏览器禁用端口表，测试使用原生HTTP。
-  return input => new Promise((resolve, reject) => {
-    const req = request(`http://127.0.0.1:${address.port}/api/v1/arrange`, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-    }, response => {
-      let body = '';
-      response.setEncoding('utf8');
-      response.on('data', chunk => { body += chunk; });
-      response.on('error', reject);
-      response.on('end', () => {
-        try { resolve({ status: response.statusCode, body: JSON.parse(body) }); }
-        catch (error) { reject(error); }
-      });
-    });
-    req.on('error', reject);
-    req.end(JSON.stringify(input));
-  });
+  return input => send(address.port, JSON.stringify(input));
 }
 test('HTTP训练活动使用真实学员枚举，忽略额外布尔覆盖且保留训练席位', async t => {
   const post = await setup(t);

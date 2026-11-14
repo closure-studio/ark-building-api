@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { skillRegistry } from '../../src/mechanisms/registry.mjs';
-import { compileBuff as compile } from '../../src/mechanisms/compile.mjs';
 import { planIsolation as isolate } from '../../src/mechanisms/isolation.mjs';
 import { createIsolatedEvaluator as prepare, evaluateModifiers as evaluate } from '../../src/mechanisms/evaluate.mjs';
 import { buildCoverageReport as report } from '../../src/data/report.mjs';
@@ -20,8 +19,6 @@ export function fixtureRegistry(catalog) {
   }
   return registry;
 }
-export const compileBuff = (buff, characterNames = {}) => compile(buff, characterNames,
-  fixtureRegistry({ buffs: { input: buff }, characterNames }));
 export const planIsolation = (snapshot, catalog) => isolate(snapshot, catalog, fixtureRegistry(catalog));
 export const createIsolatedEvaluator = (snapshot, catalog) => prepare(snapshot, catalog, fixtureRegistry(catalog));
 export const evaluateModifiers = (snapshot, assignment, catalog) => evaluate(snapshot, assignment, catalog, fixtureRegistry(catalog));

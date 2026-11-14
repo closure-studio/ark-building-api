@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { request } from 'node:http';
+import { send } from '../fixtures/http.mjs';
 import { fileURLToPath } from 'node:url';
 import { createSchedulingService } from '../../src/runtime/service.mjs';
 import { syntheticPlayer, dataPin } from '../fixtures/player.mjs';
@@ -12,22 +12,7 @@ test('真实伙伴技能通过HTTP按持有、解锁、疲劳和恢复重新计�
   });
   t.after(() => service.close());
   const address = await service.listen();
-  const post = input => new Promise((resolve, reject) => {
-    const req = request(`http://127.0.0.1:${address.port}/api/v1/arrange`, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-    }, response => {
-      let text = '';
-      response.setEncoding('utf8');
-      response.on('data', chunk => { text += chunk; });
-      response.on('error', reject);
-      response.on('end', () => {
-        try { resolve({ status: response.statusCode, body: JSON.parse(text) }); }
-        catch (error) { reject(error); }
-      });
-    });
-    req.on('error', reject);
-    req.end(JSON.stringify(input));
-  });
+  const post = input => send(address.port, JSON.stringify(input));
   const input = syntheticPlayer(['char_1042_phatm2', 'char_4198_christ']);
   input.building.roomSlots.m.level = 2;
   input.building.rooms.MANUFACTURE.m.formulaId = '1';
